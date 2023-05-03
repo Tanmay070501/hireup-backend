@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-    email:{
+    email: {
         type: String,
         required: true,
         unique: true,
@@ -10,16 +10,20 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role:{
+    role: {
         type: String,
     },
-    emailVerified:{
+    emailVerified: {
         type: Boolean,
         default: false,
     },
     profilePic: {
-        type: String
-    }
-})
+        type: String,
+    },
+    profileCompleted: {
+        type: Boolean,
+        default: false,
+    },
+});
 
 module.exports = mongoose.model("User", UserSchema);
