@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const checkAuth = require("./middleware/checkAuth");
 app.use(
     cors({
         origin: [process.env.FRONTEND_URL],
@@ -11,13 +10,17 @@ app.use(
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
+//middlewares
+const checkAuth = require("./middleware/checkAuth");
+const checkRole = require("./middleware/checkRole");
 //Routes
 const adminRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/student");
+const companyRoutes = require("./routes/company");
 app.use("/auth", adminRoutes);
 
-app.use("/student", checkAuth, studentRoutes);
+app.use("/student", checkAuth, checkRole("student"), studentRoutes);
+app.use("/company", checkAuth, checkRole("company"), companyRoutes);
 
 app.get("/", (req, res) => {
     return res.send({ message: "Hi from hireup backend" });
