@@ -17,19 +17,19 @@ const checkRole = require("./middleware/checkRole");
 const adminRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/student");
 const companyRoutes = require("./routes/company");
+app.get("/", (req, res) => {
+    return res.send({ message: "Hi from hireup backend" });
+});
+
 app.use("/auth", adminRoutes);
 
 app.use("/student", checkAuth, checkRole("student"), studentRoutes);
 app.use("/company", checkAuth, checkRole("company"), companyRoutes);
 
-app.get("/", (req, res) => {
-    return res.send({ message: "Hi from hireup backend" });
-});
-
 app.use((err, req, res, next) => {
     if (err) {
-        return res.status(err.code || 404).send({
-            message: err.message,
+        return res.status(err?.code || 404).send({
+            message: err?.message,
         });
     } else {
         return res.status(404).send({ message: "404 Not found" });

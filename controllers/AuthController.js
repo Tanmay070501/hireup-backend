@@ -5,6 +5,7 @@ const EmailVerifyToken = require("../models/EmailVerifyToken");
 const crypto = require("crypto");
 const sendMail = require("../utils/sendMail");
 const jwt = require("jsonwebtoken");
+const InviteToken = require("../models/InviteToken");
 
 module.exports.signup = async (req, res, next) => {
     const email = req.body.email;
@@ -173,9 +174,51 @@ module.exports.verify = async (req, res, next) => {
             return res.redirect(process.env.FRONTEND_URL + "/login");
         } catch (err) {
             await session.abortTransaction();
+            await session.endSession();
             throw err;
         }
     } catch (err) {
         return next({ err });
+    }
+};
+
+module.exports.createAccount = async (req, res, next) => {
+    const { token, password } = req.body;
+    if (!token) {
+        return next({ message: "Token is required" });
+    }
+    if (!password) {
+        return next({ message: "Password is required" });
+    }
+    try {
+        let inviteToken = await InviteToken.findOne({ token });
+        if (!inviteToken) {
+            return next({ message: "Invalid invite!" });
+        }
+        const secretPass = await bcrypt.hash(password, 12);
+        //TODO: NEED TO ADD COMPANY REFERENCE TO USER
+        const user = new User({
+            email: inviteToken.email,
+            password: secretPass,
+            role: "recruiter",
+            emailVerified: true,
+        });
+        const session = await mongoose.startSession();
+        await session.startTransaction();
+        try {
+            await user.save({ session });
+            await inviteToken.deleteOne({ session });
+            await session.commitTransaction();
+            await session.endSession();
+            return res.send({
+                message: "Account created successfully! Login to your account",
+            });
+        } catch (err) {
+            await session.abortTransaction();
+            await session.endSession();
+            throw err;
+        }
+    } catch (err) {
+        return next(err);
     }
 };

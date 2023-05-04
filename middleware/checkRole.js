@@ -21,7 +21,7 @@ const checkRole = function (check_role = false) {
             if (user.role !== role) {
                 return res.status(403).send({ message: "User role mismatch!" });
             }
-            if (check_role && checkRole !== user.role) {
+            if (check_role && check_role !== user.role) {
                 return res
                     .status(403)
                     .send({ message: "You are not authorized!" });
