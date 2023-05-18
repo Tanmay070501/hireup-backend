@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const upload = require("multer")();
 app.use(
     cors({
         origin: [process.env.FRONTEND_URL],
@@ -27,7 +28,17 @@ app.use("/student", checkAuth, checkRole("student"), studentRoutes);
 app.use("/company", checkAuth, checkRole("company"), companyRoutes);
 
 app.use((err, req, res, next) => {
+    console.log(err);
     if (err) {
+        if (err?.code) {
+            if (typeof err.code == "string") {
+                err.code = 500;
+            }
+            if (err.code > 599 || err.code < 400) {
+                err.code = 500;
+            }
+        }
+        console.log(err.code);
         return res.status(err?.code || 404).send({
             message: err?.message,
         });

@@ -1,7 +1,10 @@
+const { default: mongoose } = require("mongoose");
+const Company = require("../models/Company");
 const InviteToken = require("../models/InviteToken");
 const User = require("../models/User");
 const sendMail = require("../utils/sendMail");
 const crypto = require("crypto");
+const { uploadFile } = require("../utils/uploadFile");
 
 module.exports.invite = async (req, res, next) => {
     const { email, userId } = req.body;
@@ -43,5 +46,56 @@ module.exports.invite = async (req, res, next) => {
         return res.send({ message: "Invitaion email sent" });
     } catch (err) {
         return next(err);
+    }
+};
+
+module.exports.createProfile = async (req, res, next) => {
+    // console.log(req.body);
+    // console.log(req.file);
+    const { name, logo, description, website } = req.body;
+    if (!name) {
+        return next({ message: "Company's name cannot be empty!" });
+    }
+    const data = {};
+    data.name = name;
+    if (logo != "undefined") {
+        data.logo = logo;
+    }
+    if (description != "undefined") {
+        data.description = description;
+    }
+    if (website != "undefined") {
+        data.website = website;
+    }
+    const session = await mongoose.startSession();
+    //console.log("reached");
+    //console.log(data);
+    try {
+        await session.startTransaction();
+        let user = await User.findById(req.userId).select("-password");
+        if (user.profileCompleted) {
+            return next({ message: "Profile already completed." });
+        }
+        let company = new Company({ userId: req.userId, ...data });
+        if (req.file) {
+            const downloadUrl = await uploadFile("logo", req.file);
+            if (downloadUrl) {
+                company.logo = downloadUrl;
+            }
+        }
+        company = await company.save({ session });
+
+        user.company = company._id;
+        user.profileCompleted = true;
+        user = await user.save({ session });
+        console.log(user);
+        await session.commitTransaction();
+        await session.endSession();
+        return res.send({ result: user.toObject() });
+    } catch (error) {
+        console.log(error);
+        await session.abortTransaction();
+        await session.endSession();
+        return next(error);
     }
 };

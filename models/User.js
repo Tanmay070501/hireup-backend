@@ -24,6 +24,17 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    resume: { type: String },
+    name: { type: String },
+    course: { type: String },
+    collegeName: { type: String },
+    tenthPercentage: { type: String },
+    twelvethPercentage: { type: String },
+    coursePercentage: { type: String },
+    company: {
+        type: mongoose.Types.ObjectId,
+        ref: "Company",
+    },
 });
 
 module.exports = mongoose.model("User", UserSchema);
