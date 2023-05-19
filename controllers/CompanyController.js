@@ -15,6 +15,10 @@ module.exports.invite = async (req, res, next) => {
         });
     }
     try {
+        let companyUser = await User.findById(userId);
+        if (!companyUser) {
+            return next({ message: "Invalid Request! User does not exist!" });
+        }
         let user = await User.findOne({ email }).exec();
         if (user) {
             return next({ message: "User with this email id already exists!" });
@@ -30,10 +34,12 @@ module.exports.invite = async (req, res, next) => {
             });
             return res.send({ message: "Invitaion email sent again!" });
         }
+        console.log(user);
         token = new InviteToken({
-            userId,
+            userId: companyUser?._id,
             token: crypto.randomBytes(32).toString("hex"),
             email,
+            company: companyUser?.company,
         });
         token = await token.save();
         //send email with link init
@@ -88,7 +94,8 @@ module.exports.createProfile = async (req, res, next) => {
         user.company = company._id;
         user.profileCompleted = true;
         user = await user.save({ session });
-        console.log(user);
+        user = await user.populate("company");
+        //console.log(user);
         await session.commitTransaction();
         await session.endSession();
         return res.send({ result: user.toObject() });

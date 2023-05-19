@@ -25,7 +25,7 @@ module.exports.uploadFile = async (location, file) => {
 
     const storageRef = ref(
         firebase.storage,
-        `files/${location}/${req.file.originalname + " " + dateTime + ".pdf"}`
+        `files/${location}/${file.originalname + " " + dateTime + ".pdf"}`
     );
 
     // Create file metadata including the content type
@@ -35,7 +35,11 @@ module.exports.uploadFile = async (location, file) => {
     };
 
     // Upload the file in the bucket storage
-    const snapshot = await uploadBytesResumable(storageRef, rbuffer, metadata);
+    const snapshot = await uploadBytesResumable(
+        storageRef,
+        file.buffer,
+        metadata
+    );
     //by using uploadBytesResumable we can control the progress of uploading like pause, resume, cancel
 
     // Grab the public url

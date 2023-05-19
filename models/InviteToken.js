@@ -14,6 +14,11 @@ const InviteTokenSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    company: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: "Company",
+    },
 });
 
 module.exports = mongoose.model("InviteToken", InviteTokenSchema);
