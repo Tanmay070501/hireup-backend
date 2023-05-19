@@ -122,6 +122,9 @@ module.exports.login = async (req, res, next) => {
                     "User not verified! Check your email for verification.",
             });
         }
+
+        user = await user.populate("company");
+
         user = user.toObject();
         //console.log(user);
         delete user.password;
@@ -202,6 +205,7 @@ module.exports.createAccount = async (req, res, next) => {
             password: secretPass,
             role: "recruiter",
             emailVerified: true,
+            company: inviteToken?.company,
         });
         const session = await mongoose.startSession();
         await session.startTransaction();

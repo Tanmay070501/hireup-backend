@@ -35,6 +35,9 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Company",
     },
+    position: {
+        type: String,
+    },
 });
 
 module.exports = mongoose.model("User", UserSchema);

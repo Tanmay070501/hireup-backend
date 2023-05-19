@@ -8,7 +8,7 @@ const checkAuth = (req, res, next) => {
             return res.status(403).send({ message: "Authorization failed" });
         }
         const payload = jwt.verify(token, process.env.secret_key);
-        req.userId = payload.id;
+        req.userId = payload?.id;
         next();
     } catch (err) {
         if (err instanceof jwt.TokenExpiredError) {

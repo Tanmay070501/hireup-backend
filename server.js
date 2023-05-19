@@ -18,14 +18,17 @@ const checkRole = require("./middleware/checkRole");
 const adminRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/student");
 const companyRoutes = require("./routes/company");
+const recruiterRoutes = require("./routes/recruiter");
+const JobController = require("./controllers/JobController");
 app.get("/", (req, res) => {
     return res.send({ message: "Hi from hireup backend" });
 });
 
 app.use("/auth", adminRoutes);
-
+app.use("/job/:jobId", checkAuth, JobController.getJobDetails);
 app.use("/student", checkAuth, checkRole("student"), studentRoutes);
 app.use("/company", checkAuth, checkRole("company"), companyRoutes);
+app.use("/recruiter", checkAuth, checkRole("recruiter"), recruiterRoutes);
 
 app.use((err, req, res, next) => {
     console.log(err);
