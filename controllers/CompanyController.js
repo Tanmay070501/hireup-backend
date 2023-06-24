@@ -5,6 +5,7 @@ const User = require("../models/User");
 const sendMail = require("../utils/sendMail");
 const crypto = require("crypto");
 const { uploadFile } = require("../utils/uploadFile");
+const JobPost = require("../models/JobPost");
 
 module.exports.invite = async (req, res, next) => {
     const { email, userId } = req.body;
@@ -34,7 +35,6 @@ module.exports.invite = async (req, res, next) => {
             });
             return res.send({ message: "Invitaion email sent again!" });
         }
-        console.log(user);
         token = new InviteToken({
             userId: companyUser?._id,
             token: crypto.randomBytes(32).toString("hex"),
@@ -56,8 +56,6 @@ module.exports.invite = async (req, res, next) => {
 };
 
 module.exports.createProfile = async (req, res, next) => {
-    // console.log(req.body);
-    // console.log(req.file);
     const { name, logo, description, website } = req.body;
     if (!name) {
         return next({ message: "Company's name cannot be empty!" });
@@ -74,8 +72,6 @@ module.exports.createProfile = async (req, res, next) => {
         data.website = website;
     }
     const session = await mongoose.startSession();
-    //console.log("reached");
-    //console.log(data);
     try {
         await session.startTransaction();
         let user = await User.findById(req.userId).select("-password");
@@ -95,14 +91,31 @@ module.exports.createProfile = async (req, res, next) => {
         user.profileCompleted = true;
         user = await user.save({ session });
         user = await user.populate("company");
-        //console.log(user);
         await session.commitTransaction();
         await session.endSession();
         return res.send({ result: user.toObject() });
     } catch (error) {
-        console.log(error);
         await session.abortTransaction();
         await session.endSession();
         return next(error);
+    }
+};
+
+module.exports.getRecruitersList = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return next({
+                message: "Something went wrong while fetching user!",
+            });
+        }
+        let resolved = false;
+        let recruiterList = await User.find({
+            role: "recruiter",
+            company: user.company,
+        }).select("-password");
+        res.send({ result: recruiterList });
+    } catch (error) {
+        next(error);
     }
 };

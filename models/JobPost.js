@@ -17,6 +17,13 @@ const JobPostSchema = new mongoose.Schema({
             ref: "User",
         },
     ],
+    jobType: {
+        type: String,
+        default: "offcampus",
+    },
+    colleges: [{ type: String }],
+    jobLocation: { type: String },
+    salary: { type: String },
 });
 
 module.exports = mongoose.model("JobPost", JobPostSchema);

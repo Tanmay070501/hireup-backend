@@ -5,7 +5,7 @@ const cors = require("cors");
 const upload = require("multer")();
 app.use(
     cors({
-        origin: [process.env.FRONTEND_URL],
+        origin: [process.env.FRONTEND_URL, "http://192.168.1.46:3000"],
     })
 );
 const bodyParser = require("body-parser");
@@ -15,23 +15,26 @@ app.use(bodyParser.json());
 const checkAuth = require("./middleware/checkAuth");
 const checkRole = require("./middleware/checkRole");
 //Routes
-const adminRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
 const studentRoutes = require("./routes/student");
 const companyRoutes = require("./routes/company");
 const recruiterRoutes = require("./routes/recruiter");
+const pCellRoutes = require("./routes/pcell");
 const JobController = require("./controllers/JobController");
 app.get("/", (req, res) => {
     return res.send({ message: "Hi from hireup backend" });
 });
 
-app.use("/auth", adminRoutes);
+app.use("/auth", authRoutes);
 app.use("/job/:jobId", checkAuth, JobController.getJobDetails);
 app.use("/student", checkAuth, checkRole("student"), studentRoutes);
 app.use("/company", checkAuth, checkRole("company"), companyRoutes);
 app.use("/recruiter", checkAuth, checkRole("recruiter"), recruiterRoutes);
+app.use("/pcell", checkAuth, checkRole("pcell"), pCellRoutes);
+app.use("/admin", checkAuth, checkRole("admin"), adminRoutes);
 
 app.use((err, req, res, next) => {
-    console.log(err);
     if (err) {
         if (err?.code) {
             if (typeof err.code == "string") {
@@ -41,7 +44,6 @@ app.use((err, req, res, next) => {
                 err.code = 500;
             }
         }
-        console.log(err.code);
         return res.status(err?.code || 404).send({
             message: err?.message,
         });

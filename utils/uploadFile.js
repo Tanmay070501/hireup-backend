@@ -29,7 +29,6 @@ module.exports.uploadFile = async (location, file) => {
     );
 
     // Create file metadata including the content type
-    console.log(file);
     const metadata = {
         contentType: file.mimetype,
     };

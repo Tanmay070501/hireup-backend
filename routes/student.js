@@ -7,5 +7,14 @@ router.post(
     upload.single("resume"),
     StudentController.createProfile
 );
+router.patch(
+    "/update",
+    upload.single("resume"),
+    StudentController.updateProfile
+);
+router.put("/apply", StudentController.applyForJob);
+router.get("/offcampus", StudentController.offCampusJobs);
+router.get("/oncampus", StudentController.onCampusJobs);
+router.get("/applied", StudentController.appliedJobs);
 
 module.exports = router;

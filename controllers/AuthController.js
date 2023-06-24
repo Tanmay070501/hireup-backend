@@ -64,7 +64,6 @@ module.exports.signup = async (req, res, next) => {
                     "User created successfuly! Check your email for verification.",
             });
         } catch (err) {
-            console.log("aborting transaction");
             await session.abortTransaction();
             await session.endSession();
             throw err;
@@ -122,14 +121,13 @@ module.exports.login = async (req, res, next) => {
                     "User not verified! Check your email for verification.",
             });
         }
-
+        if(user?.ban){
+            return next({message:"User is banned from platform!"})
+        }
         user = await user.populate("company");
 
         user = user.toObject();
-        //console.log(user);
         delete user.password;
-        //console.log(user);
-        //jwt token creation logic
         const accessToken = jwt.sign(
             {
                 id: user._id,
@@ -157,12 +155,10 @@ module.exports.verify = async (req, res, next) => {
     }
     let user = await User.findById(id);
     if (!user) {
-        console.log("user do not exist");
         return next({ message: "User with this id does not exist!" });
     }
     const tokenCheck = await EmailVerifyToken.findOne({ userId: id, token });
     if (!tokenCheck) {
-        console.log("Token either expired or does not exist!");
         return next({ message: "Token either expired or does not exist!" });
     }
     try {
