@@ -66,7 +66,8 @@ module.exports.createJobPost = async (req, res, next) => {
         try {
             session.startTransaction();
             jobPost = await jobPost.save({ session });
-            user.jobCount = user.jobCount++;
+           let jobCount = user.jobCount;
+            user.jobCount = jobCount+ 1;
             await user.save({ session });
             await session.commitTransaction();
             await session.endSession();
@@ -116,7 +117,8 @@ module.exports.jobDelete = async (req, res, next) => {
         if(req.userId!== user?.id){
             return next({message:"Unauthorized delete action!!!"});
         }
-        user.jobCount = user.jobCount--;
+        let jobCount = user?.jobCount;
+        user.jobCount = jobCount - 1;
         user.save();
         await JobPost.findByIdAndDelete(job_post._id);
         return res.send({message: "Job Deleted successfully!"})
